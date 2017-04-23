@@ -9,6 +9,7 @@ namespace telegrambot
     {
         static void Main(string[] args)
         {
+            Console.ReadKey();
         }
     }
 }

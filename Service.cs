@@ -1,16 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using telegrambot.Models;
+using Newtonsoft.Json;
 
 namespace telegrambot
 {
     public static class Service
     {
-        public static string readConfig()
-        {
-            return null;
+        private static string configName = "config.txt";
+
+        public static Config readConfig()
+        {         
+            var text = File.ReadAllText(configName);
+            Config config = JsonConvert.DeserializeObject<Config>(text);
+
+            return config;
         }
     }
 }
