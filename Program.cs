@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
+
 
 namespace telegrambot
 {
@@ -9,6 +8,8 @@ namespace telegrambot
     {
         static void Main(string[] args)
         {
+            Bot.start(Service.readConfig().token);
+
             Console.ReadKey();
         }
     }
