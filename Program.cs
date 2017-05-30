@@ -10,7 +10,10 @@ namespace telegrambot
         {
             Bot.start(Service.readConfig().token);
 
-            Console.ReadKey();
+            while(true)
+            {
+                Thread.Sleep(10000);
+            }
         }
     }
 }

